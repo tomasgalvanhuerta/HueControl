@@ -1,4 +1,3 @@
-// pub mod hue_bridge {
 use serde::{Deserialize, Serialize};
 use serde_json::{error, from_str, to_string};
 
@@ -20,4 +19,3 @@ impl HueBridge {
         result
     }
 }
-// }

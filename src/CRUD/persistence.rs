@@ -4,6 +4,7 @@ use rusqlite::{Connection, Result};
 ///
 struct Persistence {
     connection: Connection,
+    table_state: TableState,
 }
 
 impl Persistence {
@@ -13,19 +14,7 @@ impl Persistence {
         Persistence { connection }
     }
 
-    pub fn check_table_version(&self) -> Resul<TableState> {}
+    pub fn check_table_version(&self) -> Result<TableState> {}
 
     // pub fn upgrade_table(&self) {}
-
-    pub fn create_table(&self) -> Result<TableState> {
-        self.connection.execute(
-            "CREATE TABLE IF NOT EXISTS lights (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                state TEXT NOT NULL
-            )",
-            [],
-        )?;
-        Ok(TableState::Exists)
-    }
 }

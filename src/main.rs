@@ -1,6 +1,8 @@
 pub mod communication;
+pub mod crud;
 pub mod setup;
 pub mod setup_mdns;
+
 use communication::discovery::{self, Discovery};
 
 #[tokio::main]
