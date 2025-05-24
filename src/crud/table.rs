@@ -4,11 +4,15 @@ use super::auth_token::AuthToken;
 use super::table_existence::TableState;
 use rusqlite::{Connection, Result};
 
-struct TableWrapper {
+pub struct TableWrapper {
     connection: Connection,
 }
 
 impl TableWrapper {
+    pub fn new(connection: Connection) -> Result<Self> {
+        Ok(Self { connection })
+    }
+
     pub fn create_table(&self) -> Result<TableState> {
         self.connection.execute(
             "CREATE TABLE IF NOT EXISTS authToken (
