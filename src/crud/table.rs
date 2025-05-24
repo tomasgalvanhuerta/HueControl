@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use super::auth_token::AuthToken;
 use super::table_existence::TableState;
 use rusqlite::{Connection, Result};
@@ -23,7 +25,7 @@ impl TableWrapper {
             .prepare("SELECT date, token FROM authToken")?;
         let rows = stmt.query_map([], |row| {
             Ok(AuthToken {
-                time_interval: row.get(0)?,
+                time_interval: Duration::from_secs(row.get(0)?),
                 token: row.get(1)?,
             })
         })?;
@@ -36,10 +38,13 @@ impl TableWrapper {
     }
 
     // Only one should be written at a time
-    pub fn write_table(&self, auth_token: &AuthToken) -> Result<Bool> {
+    pub fn write_table(&self, auth_token: &AuthToken) -> Result<bool> {
         let result = self.connection.execute(
             "INSERT INTO authToken (date, token) VALUES (?1, ?2)",
-            [auth_token.date, auth_token.token],
+            [
+                auth_token.token.clone(),
+                auth_token.time_interval.as_secs().to_string(),
+            ],
         );
         match result {
             Ok(_) => Ok(true),
@@ -50,11 +55,14 @@ impl TableWrapper {
         }
     }
 
-    pub fn remove_AuthToken(&self, auth_token: &AuthToken) -> Result<Bool> {
-        self.connection.execute(
+    pub fn remove_auth_token(&self, auth_token: &AuthToken) -> Result<bool> {
+        let result = self.connection.execute(
             "DELETE FROM authToken WHERE date = ?1 AND token = ?2",
-            [auth_token.date, auth_token.token],
-        )?;
+            [
+                auth_token.token.clone(),
+                auth_token.time_interval.as_secs().to_string(),
+            ],
+        );
         match result {
             Ok(_) => Ok(true),
             Err(e) => {
