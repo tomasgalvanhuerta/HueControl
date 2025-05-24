@@ -15,7 +15,7 @@ impl HueSetup {
         let hue_bridge_response = self.hue_bridge().await;
         match &hue_bridge_response {
             Ok(bridge) => println!("Bridge Found, {:?}", bridge),
-            Err(err) => println!("Does not exist with error"),
+            Err(_) => println!("Does not exist with error"),
         }
         return hue_bridge_response;
     }
@@ -27,10 +27,10 @@ impl HueSetup {
         let client = self.client.clone();
         let hue_bridge_string = get_dns_data(client)
             .await
-            .map_err(|error| SetupHueError::NoCall)?;
+            .map_err(|_| SetupHueError::NoCall)?;
         println!("Bridge info {hue_bridge_string}");
         let hue_bridge_response =
-            HueBridge::from_json(hue_bridge_string).map_err(|error| SetupHueError::NoCall);
+            HueBridge::from_json(hue_bridge_string).map_err(|_| SetupHueError::NoCall);
         return hue_bridge_response;
     }
 }

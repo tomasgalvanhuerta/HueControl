@@ -70,5 +70,5 @@ impl Discovery {
     }
 
     /// Loop Search until something is found
-    pub async fn search_ForBrige(&self) {}
+    pub async fn search_for_brige(&self) {}
 }

@@ -20,7 +20,7 @@ impl SetupMDNS {
         let browse_result = self
             .service_daemon
             .browse(service_type)
-            .map_err(|error| SetupMDNSError::NoDaemon);
+            .map_err(|_| SetupMDNSError::NoDaemon);
         return browse_result;
     }
 }
