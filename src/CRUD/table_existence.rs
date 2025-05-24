@@ -1,4 +1,4 @@
-enum TableState {
+pub enum TableState {
     Exists,
     Create,
     Upgrade,

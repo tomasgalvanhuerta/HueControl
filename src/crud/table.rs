@@ -1,7 +1,9 @@
+use super::auth_token::AuthToken;
+use super::table_existence::TableState;
 use rusqlite::{Connection, Result};
 
 struct TableWrapper {
-    connection: &Connection,
+    connection: Connection,
 }
 
 impl TableWrapper {
@@ -21,7 +23,7 @@ impl TableWrapper {
             .prepare("SELECT date, token FROM authToken")?;
         let rows = stmt.query_map([], |row| {
             Ok(AuthToken {
-                date: row.get(0)?,
+                time_interval: row.get(0)?,
                 token: row.get(1)?,
             })
         })?;
