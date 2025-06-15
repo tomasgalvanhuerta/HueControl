@@ -1,7 +1,6 @@
 use super::table_existence::TableState;
 use super::{auth_token::AuthToken, table::TableWrapper};
-use rusqlite::{Connection, Error, Result};
-use tokio::sync::mpsc::OwnedPermit;
+use rusqlite::Connection;
 /// This will be a module for CRUD operations on the Hue Bridge.
 struct Persistence {
     connection: Connection,
@@ -19,27 +18,28 @@ impl Persistence {
         }
     }
 
-    pub fn check_token(connection: Connection) -> Result<AuthToken, rusqlite::Error> {
-        let table = TableWrapper::new(connection)?;
-        let table_result = table.read_table().map(|tokens| tokens.first());
-        match table_result {
-            Ok(token) => {
-                if let Some(token.OwnedPermit) = token {
-                    return Ok(Some(token));
-                } else {
-                    return Err(rusqlite::Error::ExecuteReturnedResults);
-                }
-            }
-            Err(err) => Err(err.clone()),
+    pub fn check_token(connection: Connection) -> Option<AuthToken> {
+        // Crash safer
+        let table = TableWrapper::new(connection).expect("TableWrapper not able to be created");
+        let read_tables = table.read_table();
+        let single_token = read_tables
+            .into_iter()
+            .next()
+            .and_then(|vec| vec.into_iter().next());
+        if let Some(token) = single_token {
+            return Some(token);
         }
+        return None;
     }
 
-    pub fn check_table_version(&self) -> Result<TableState, rusqlite::Error> {
-        // let table_state = TableState::new(&self.connection)?;
-        // Ok(table_state)
-        // warning fix me!
-        Err(Error::ExecuteReturnedResults)
-    }
+    // pub fn check_table_version(&self) -> Result<TableState, rusqlite::Error> {
+    //     // let table_state = TableState::new(&self.connection)?;
+    //     // Ok(table_state)
+    //     // warning fix me!
+    //     Err(Error::ExecuteReturnedResults)
+    // }
 
     // pub fn upgrade_table(&self) {}
 }
+
+enum PersistanceError {}
