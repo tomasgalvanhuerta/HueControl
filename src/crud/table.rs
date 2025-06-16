@@ -9,17 +9,20 @@ pub struct TableWrapper {
 }
 
 impl TableWrapper {
-    pub fn new(connection: Connection) -> Result<Self> {
-        Ok(Self { connection })
+    pub fn new(connection: Connection) -> Self {
+        Self { connection }
     }
 
-    pub fn create_table(&self) -> Result<TableState> {
-        self.connection.execute(
-            "CREATE TABLE IF NOT EXISTS authToken (
+    pub fn create_table(&self) -> Result<TableState, TableWrapperError> {
+        self.connection
+            .execute(
+                "CREATE TABLE IF NOT EXISTS authToken (
                 token TEXT NOT NULL
+                id TEXT NOT NULL
             )",
-            [],
-        )?;
+                [],
+            )
+            .map_err(|_| TableWrapperError::CouldNotCreateTable)?;
         Ok(TableState::Exists)
     }
 
@@ -31,6 +34,7 @@ impl TableWrapper {
             Ok(AuthToken {
                 time_interval: Duration::from_secs(row.get(0)?),
                 token: row.get(1)?,
+                id: row.get(2)?,
             })
         })?;
 
@@ -44,7 +48,7 @@ impl TableWrapper {
     // Only one should be written at a time
     pub fn write_table(&self, auth_token: &AuthToken) -> Result<bool> {
         let result = self.connection.execute(
-            "INSERT INTO authToken (date, token) VALUES (?1, ?2)",
+            "INSERT INTO authToken (date, token, id) VALUES (?1, ?2, ?3)",
             [
                 auth_token.token.clone(),
                 auth_token.time_interval.as_secs().to_string(),
@@ -61,7 +65,7 @@ impl TableWrapper {
 
     pub fn remove_auth_token(&self, auth_token: &AuthToken) -> Result<bool> {
         let result = self.connection.execute(
-            "DELETE FROM authToken WHERE date = ?1 AND token = ?2",
+            "DELETE FROM authToken WHERE date = ?1 AND token = ?2 AND id = ?3",
             [
                 auth_token.token.clone(),
                 auth_token.time_interval.as_secs().to_string(),
@@ -75,4 +79,8 @@ impl TableWrapper {
             }
         }
     }
+}
+
+pub enum TableWrapperError {
+    CouldNotCreateTable,
 }
