@@ -3,7 +3,7 @@ pub mod crud;
 pub mod setup;
 pub mod setup_mdns;
 
-use crud::persistence::Persistence;
+use crud::{persistence::Persistence, table_existence::TableState};
 use std::{thread::sleep, time::Duration};
 
 use communication::discovery::Discovery;
@@ -11,17 +11,30 @@ use communication::discovery::Discovery;
 #[tokio::main]
 async fn main() {
     loop {
-        check_table();
-        discover();
+        start();
         sleep(Duration::from_secs(5));
     }
 }
 
-async fn check_table() {
+async fn start() {
     let persistence = Persistence::new();
 
     // Confirm Table Exist, if not, create one
-    persistence.create_table();
+    let table_creation_result = persistence.create_table();
+    match table_creation_result {
+        Ok(table_state) => match table_state {
+            TableState::Create => {
+                println!("Created a new Table");
+                discover();
+            }
+            TableState::DoesNotExist => println!("Table Could not be created"),
+            TableState::Exists => {
+                discover();
+                println!("Table already existed")
+            }
+        },
+        Err(err) => println!(""),
+    }
 }
 
 async fn discover() {

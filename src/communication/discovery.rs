@@ -1,5 +1,5 @@
 use super::super::setup::setup_hue::HueSetup;
-use crate::setup::hue_bridge::HueBridge;
+use crate::{crud::persistence::Persistence, setup::hue_bridge::HueBridge};
 use reqwest::{Client, Url};
 
 pub enum Discovery {
@@ -48,7 +48,6 @@ impl Discovery {
         let mut url = Url::parse(&url).expect("Was not able to parte URL");
         url.set_port(Option::Some(443_u16))
             .expect("Not able to port to 443");
-        println!("Url is {:?}", url);
         let content = client.get(url).send().await.expect("It was not possible");
         println!("text: {content:?}");
         // return hue_bridge;
@@ -68,7 +67,4 @@ impl Discovery {
             .expect("Client was not able to search lights");
         println!("Response: {response:?}");
     }
-
-    /// Loop Search until something is found
-    pub async fn search_for_brige(&self) {}
 }

@@ -1,22 +1,18 @@
-use super::table::{self, TableWrapperError};
+use super::table::TableWrapperError;
 use super::table_existence::TableState;
 use super::{auth_token::AuthToken, table::TableWrapper};
 use rusqlite::Connection;
 /// This will be a module for CRUD operations on the Hue Bridge.
 pub struct Persistence {
-    connection: Connection,
-    table_state: TableState,
+    table_wrapper: TableWrapper,
 }
 
 impl Persistence {
     /// Create a new Persistence instance.
     pub fn new() -> Self {
         let connection = Connection::open_in_memory().expect("Failed to open in-memory database");
-        let table_state = TableState::Create;
-        Persistence {
-            connection,
-            table_state,
-        }
+        let table_wrapper = TableWrapper::new(connection);
+        Persistence { table_wrapper }
     }
 
     // Create a Queue to only have one operation at a time
@@ -25,9 +21,10 @@ impl Persistence {
     // 3. Create Loop to complete the Queue
 
     pub fn create_table(&self) -> Result<TableState, TableWrapperError> {
-        let connection = &self.connection;
-        let table_wrapper = table::TableWrapper::new(connection);
-        return Ok(TableState::Create);
+        let table_wrapper = &self.table_wrapper;
+        let table_result = table_wrapper.create_table();
+        let table_result = table_result.map_err(|_| TableWrapperError::CouldNotCreateTable);
+        return table_result;
     }
 
     pub fn check_token(connection: Connection) -> Option<AuthToken> {
@@ -43,13 +40,4 @@ impl Persistence {
         }
         return None;
     }
-
-    // pub fn check_table_version(&self) -> Result<TableState, rusqlite::Error> {
-    //     // let table_state = TableState::new(&self.connection)?;
-    //     // Ok(table_state)
-    //     // warning fix me!
-    //     Err(Error::ExecuteReturnedResults)
-    // }
-
-    // pub fn upgrade_table(&self) {}
 }
