@@ -1,20 +1,22 @@
 pub mod communication;
 pub mod crud;
 pub mod setup;
-pub mod setup_mdns;
 
 use crud::{persistence::Persistence, table_existence::TableState};
+use egui::*;
 use std::{thread::sleep, time::Duration};
 
 use communication::discovery::Discovery;
 
 #[tokio::main]
-async fn main() {
-    loop {
-        start();
-        sleep(Duration::from_secs(5));
-    }
-}
+async fn main() {}
+
+// {
+// loop {
+//     start();
+//     sleep(Duration::from_secs(5));
+// }
+// }
 
 async fn start() {
     let persistence = Persistence::new();
