@@ -14,10 +14,11 @@ impl TableWrapper {
     }
 
     pub fn create_table(&self) -> Result<TableState, TableWrapperError> {
+        println!("Creating Table from table");
         self.connection
             .execute(
                 "CREATE TABLE IF NOT EXISTS authToken (
-                token TEXT NOT NULL
+                token TEXT NOT NULL,
                 id TEXT NOT NULL
             )",
                 [],

@@ -3,20 +3,16 @@ pub mod crud;
 pub mod setup;
 
 use crud::{persistence::Persistence, table_existence::TableState};
-use egui::*;
+use eframe::{NativeOptions, egui};
 use std::{thread::sleep, time::Duration};
 
 use communication::discovery::Discovery;
 
 #[tokio::main]
-async fn main() {}
-
-// {
-// loop {
-//     start();
-//     sleep(Duration::from_secs(5));
-// }
-// }
+async fn main() {
+    println!("Starting HueControl");
+    start().await;
+}
 
 async fn start() {
     let persistence = Persistence::new();
@@ -27,15 +23,15 @@ async fn start() {
         Ok(table_state) => match table_state {
             TableState::Create => {
                 println!("Created a new Table");
-                discover();
+                discover().await;
             }
             TableState::DoesNotExist => println!("Table Could not be created"),
             TableState::Exists => {
-                discover();
+                discover().await;
                 println!("Table already existed")
             }
         },
-        Err(err) => println!(""),
+        Err(err) => println!("Error creating table"),
     }
 }
 
