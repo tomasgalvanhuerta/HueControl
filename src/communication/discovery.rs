@@ -39,7 +39,7 @@ impl Discovery {
         }
     }
 
-    /// Confirm the searching Hue Bridge can accept commands
+    /// Confirm searching Hue Bridge can accept commands
     pub async fn confirm_ip_address(&self, hue_bridge: &HueBridge, client: &Client) {
         let url = format!(
             "https://{}/api/0/config",

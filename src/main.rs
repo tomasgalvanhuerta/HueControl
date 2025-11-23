@@ -8,6 +8,8 @@ use std::{thread::sleep, time::Duration};
 
 use communication::discovery::Discovery;
 
+use crate::crud::persistence;
+
 #[tokio::main]
 async fn main() {
     println!("Starting HueControl");
@@ -18,7 +20,7 @@ async fn start() {
     let persistence = Persistence::new();
 
     // Confirm Table Exist, if not, create one
-    let table_creation_result = persistence.create_table();
+    let table_creation_result = persistence.open
     match table_creation_result {
         Ok(table_state) => match table_state {
             TableState::Create => {

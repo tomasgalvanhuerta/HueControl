@@ -1,3 +1,5 @@
+use std::io::Error;
+
 use super::table::TableWrapperError;
 use super::table_existence::TableState;
 use super::{auth_token::AuthToken, table::TableWrapper};
@@ -9,10 +11,19 @@ pub struct Persistence {
 
 impl Persistence {
     /// Create a new Persistence instance.
-    pub fn new() -> Self {
-        let connection = Connection::open_in_memory().expect("Failed to open in-memory database");
-        let table_wrapper = TableWrapper::new(connection);
-        Persistence { table_wrapper }
+    pub fn new() -> Result<Self, rusqlite::Error> {
+        let path = "./db/huedb";
+        let connection_result = Connection::open(path);
+        match connection_result {
+            Ok(connection) => {
+                let table_wrapper = TableWrapper::new(connection);
+                return Ok(Persistence { table_wrapper });
+            }
+            Err(error) => {
+                println!("Error {}", error);
+                return Err(error);
+            }
+        }
     }
 
     // Create a Queue to only have one operation at a time
@@ -22,7 +33,7 @@ impl Persistence {
 
     pub fn create_table(&self) -> Result<TableState, TableWrapperError> {
         let table_wrapper = &self.table_wrapper;
-        let table_result = table_wrapper.create_table();
+        let table_result = table_wrapper.open_or_create_table();
         let table_result = table_result.map_err(|_| TableWrapperError::CouldNotCreateTable);
         return table_result;
     }
