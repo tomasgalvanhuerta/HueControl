@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+#[derive(Debug)]
 pub struct AuthToken {
     pub time_interval: Duration,
     pub token: String,

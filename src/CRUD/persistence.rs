@@ -1,5 +1,3 @@
-use std::io::Error;
-
 use super::table::TableWrapperError;
 use super::table_existence::TableState;
 use super::{auth_token::AuthToken, table::TableWrapper};
@@ -38,17 +36,17 @@ impl Persistence {
         return table_result;
     }
 
-    pub fn check_token(connection: Connection) -> Option<AuthToken> {
+    pub fn check_token(&self) -> Result<AuthToken, TableWrapperError> {
         // Crash safer
-        let table = TableWrapper::new(connection);
-        let read_tables = table.read_table();
+        let table_wrapper = &self.table_wrapper;
+        let read_tables = table_wrapper.read_table();
         let single_token = read_tables
             .into_iter()
             .next()
             .and_then(|vec| vec.into_iter().next());
         if let Some(token) = single_token {
-            return Some(token);
+            return Ok(token);
         }
-        return None;
+        return Err(TableWrapperError::CouldNotFindToken);
     }
 }
