@@ -1,4 +1,4 @@
-use super::super::setup::setup_hue::HueSetup;
+use crate::setup::setup_hue::HueSetup;
 use crate::{crud::persistence::Persistence, setup::hue_bridge::HueBridge};
 use reqwest::{Client, Url};
 
