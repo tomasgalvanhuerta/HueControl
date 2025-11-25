@@ -3,6 +3,7 @@ use crate::crud::auth_token::AuthToken;
 use crate::crud::persistence::Persistence;
 use crate::crud::table::TableWrapper;
 use crate::crud::table_existence::TableState;
+use crate::setup::hue_bridge::HueBridge;
 pub struct RootController {}
 
 impl RootController {
@@ -36,28 +37,41 @@ impl RootController {
     pub fn with_token(auth_token: AuthToken) {}
 
     async fn request_auth_token() {
-        Self::discover().await;
+        let bridges = Self::discover().await;
+        if bridges.len() > 1 {
+        } else {
+        }
     }
 
-    async fn discover() {
+    async fn discover() -> Vec<HueBridge> {
         let discovery = Discovery::new().await;
-        match &discovery {
-            Discovery::Searching(_) => println!("Searching For Hue Bridge"),
+        match discovery {
+            Discovery::Searching(_) => {
+                println!("Searching For Hue Bridge");
+                return Vec::new();
+            }
             Discovery::FoundMultipleHue(hue_bridges, _) => {
-                println!("Found multiple Bridhges {:?}", hue_bridges)
+                println!("Found multiple Bridhges {:?}", hue_bridges);
+                // TODO: Implement logic to select a bridge from the list
+                return hue_bridges;
             }
             Discovery::FoundSingleHue(hue_bridge, passed_client) => {
+                let client = &passed_client;
                 println!("Found Single Bridge {:?}", hue_bridge);
-                discovery
-                    .confirm_ip_address(hue_bridge, passed_client)
-                    .await;
-                discovery
-                    .light_information(&hue_bridge.internalipaddress, passed_client)
-                    .await;
+                Discovery::confirm_ip_address(&hue_bridge, client).await;
+                Discovery::light_information(&hue_bridge.internalipaddress, client).await;
+                return map_to_group(hue_bridge);
             }
             Discovery::Using(hue_bridge, _) => {
-                println!("Going to Use {:?}", hue_bridge)
+                println!("Going to Use {:?}", hue_bridge);
+                return map_to_group(hue_bridge);
             }
         }
     }
+}
+
+fn map_to_group<T>(item: T) -> Vec<T> {
+    let mut hue_bridge_container: Vec<T> = Vec::new();
+    hue_bridge_container.push(item);
+    return hue_bridge_container;
 }

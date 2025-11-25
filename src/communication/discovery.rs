@@ -40,7 +40,7 @@ impl Discovery {
     }
 
     /// Confirm searching Hue Bridge can accept commands
-    pub async fn confirm_ip_address(&self, hue_bridge: &HueBridge, client: &Client) {
+    pub async fn confirm_ip_address(hue_bridge: &HueBridge, client: &Client) {
         let url = format!(
             "https://{}/api/0/config",
             hue_bridge.internalipaddress.clone()
@@ -54,7 +54,7 @@ impl Discovery {
     }
 
     /// Get Room information
-    pub async fn light_information(&self, ip_address: &String, client: &Client) {
+    pub async fn light_information(ip_address: &String, client: &Client) {
         let url = format!("https://{}/clip/v2/resource/light", ip_address.clone());
         let mut url = Url::parse(&url).expect("Was not able to construct Room search URL");
         url.set_port(Option::Some(443_u16))
