@@ -1,5 +1,7 @@
 use crate::communication::discovery::Discovery;
+use crate::crud::auth_token::AuthToken;
 use crate::crud::persistence::Persistence;
+use crate::crud::table::TableWrapper;
 use crate::crud::table_existence::TableState;
 pub struct RootController {}
 
@@ -15,18 +17,26 @@ impl RootController {
         let table_creation_result = persistence.create_table();
         match table_creation_result {
             Ok(table_state) => match table_state {
-                TableState::Create => {
-                    println!("Created a new Table");
-                    Self::discover().await;
+                TableState::DoesNotExist => {
+                    // Program may not have access to create a new file
+                    println!("Was not able to create folder, try again message");
                 }
-                TableState::DoesNotExist => println!("Table Could not be created"),
                 TableState::Exists => {
-                    let token_result = persistence.check_token();
-                    println!("Table already existed {:?}", token_result)
+                    println!("Table exists");
+                    let token_result = &persistence
+                        .check_token()
+                        .map(|token| Self::with_token(token))
+                        .map_err(|_| Self::request_auth_token());
                 }
             },
             Err(err) => println!("Error creating table"),
         }
+    }
+
+    pub fn with_token(auth_token: AuthToken) {}
+
+    async fn request_auth_token() {
+        Self::discover().await;
     }
 
     async fn discover() {

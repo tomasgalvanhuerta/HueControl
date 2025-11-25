@@ -1,8 +1,8 @@
-use std::time::Duration;
-
 use super::auth_token::AuthToken;
 use super::table_existence::TableState;
+use crate::crud::table_wrapper_error::TableWrapperError;
 use rusqlite::{Connection, Result};
+use std::time::Duration;
 
 pub struct TableWrapper {
     connection: Connection,
@@ -17,7 +17,7 @@ impl TableWrapper {
         // &self.connection
     }
 
-    pub fn open_or_create_table(&self) -> Result<TableState, TableWrapperError> {
+    pub fn open_or_create_table(&self) -> Result<bool, TableWrapperError> {
         println!("Creating Table from table");
         self.connection
             .execute(
@@ -28,7 +28,7 @@ impl TableWrapper {
                 [],
             )
             .map_err(|_| TableWrapperError::CouldNotCreateTable)?;
-        Ok(TableState::Exists)
+        Ok(true)
     }
 
     pub fn read_table(&self) -> Result<Vec<AuthToken>> {
@@ -84,10 +84,4 @@ impl TableWrapper {
             }
         }
     }
-}
-
-#[derive(Debug)]
-pub enum TableWrapperError {
-    CouldNotCreateTable,
-    CouldNotFindToken,
 }

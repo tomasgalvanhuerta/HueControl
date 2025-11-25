@@ -1,7 +1,9 @@
-use super::table::TableWrapperError;
-use super::table_existence::TableState;
-use super::{auth_token::AuthToken, table::TableWrapper};
+use crate::crud::auth_token::AuthToken;
+use crate::crud::{
+    table::TableWrapper, table_existence::TableState, table_wrapper_error::TableWrapperError,
+};
 use rusqlite::Connection;
+
 /// This will be a module for CRUD operations on the Hue Bridge.
 pub struct Persistence {
     table_wrapper: TableWrapper,
@@ -10,7 +12,7 @@ pub struct Persistence {
 impl Persistence {
     /// Create a new Persistence instance.
     pub fn new() -> Result<Self, rusqlite::Error> {
-        let path = "./db/huedb";
+        let path = "./huedb.db3";
         let connection_result = Connection::open(path);
         match connection_result {
             Ok(connection) => {
@@ -31,15 +33,17 @@ impl Persistence {
 
     pub fn create_table(&self) -> Result<TableState, TableWrapperError> {
         let table_wrapper = &self.table_wrapper;
-        let table_result = table_wrapper.open_or_create_table();
+        let table_result = table_wrapper
+            .open_or_create_table()
+            .map(|_| TableState::Exists);
         let table_result = table_result.map_err(|_| TableWrapperError::CouldNotCreateTable);
         return table_result;
     }
 
     pub fn check_token(&self) -> Result<AuthToken, TableWrapperError> {
+        // Does not belong here
         // Crash safer
-        let table_wrapper = &self.table_wrapper;
-        let read_tables = table_wrapper.read_table();
+        let read_tables = self.table_wrapper.read_table();
         let single_token = read_tables
             .into_iter()
             .next()
