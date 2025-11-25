@@ -2,6 +2,7 @@ use crate::crud::auth_token::AuthToken;
 use crate::crud::{
     table::TableWrapper, table_existence::TableState, table_wrapper_error::TableWrapperError,
 };
+use crate::setup::hue_bridge::HueBridge;
 use rusqlite::Connection;
 
 /// This will be a module for CRUD operations on the Hue Bridge.
@@ -52,5 +53,14 @@ impl Persistence {
             return Ok(token);
         }
         return Err(TableWrapperError::CouldNotFindToken);
+    }
+
+    pub fn persist_bridge(&self, auth_token: &AuthToken) -> Result<TableState, TableWrapperError> {
+        let table_wrapper = &self.table_wrapper;
+        let table_result = table_wrapper
+            .write_table(auth_token)
+            .map(|_| TableState::Exists);
+        let table_result = table_result.map_err(|_| TableWrapperError::CouldNotCreateTable);
+        return table_result;
     }
 }

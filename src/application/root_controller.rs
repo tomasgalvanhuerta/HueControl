@@ -27,20 +27,29 @@ impl RootController {
                     let token_result = &persistence
                         .check_token()
                         .map(|token| Self::with_token(token))
-                        .map_err(|_| Self::request_auth_token());
+                        .map_err(|_| Self::search_bridge());
                 }
             },
             Err(err) => println!("Error creating table"),
         }
     }
 
-    pub fn with_token(auth_token: AuthToken) {}
+    pub fn with_token(auth_token: AuthToken) {
+        println!("With token {:?}", auth_token);
+    }
 
-    async fn request_auth_token() {
-        let bridges = Self::discover().await;
-        if bridges.len() > 1 {
-        } else {
-        }
+    pub fn persist_bridge(bridge: HueBridge) {
+        println!("Persist_bridge with {:?}", bridge);
+        // let auth_token = AuthToken::new(duration, bridge.token, bridge.id);
+        // let persistence = Persistence::new(); // Pass it here
+        // persistence.persist_bridge(bridge);
+    }
+
+    fn request_auth_token(bridge: HueBridge) {}
+
+    fn search_bridge() {
+        let discovered_bridge = Self::discover();
+        println!("Discovering Hue Bridge");
     }
 
     async fn discover() -> Vec<HueBridge> {

@@ -6,6 +6,7 @@ pub struct HueBridge {
     pub id: String,
     pub internalipaddress: String,
     pub port: u16,
+    pub token: String,
 }
 
 impl HueBridge {
