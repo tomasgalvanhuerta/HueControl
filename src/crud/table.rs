@@ -1,5 +1,4 @@
 use super::auth_token::AuthToken;
-use super::table_existence::TableState;
 use crate::crud::table_wrapper_error::TableWrapperError;
 use rusqlite::{Connection, Result};
 use std::time::Duration;

@@ -1,8 +1,10 @@
-use eframe::egui::TextBuffer;
-use reqwest::{Client, Request, Url};
+use crate::crud::auth_token::AuthToken;
 
-enum RequestToken {
-    Success(String),
+use super::request_token_body::RequestTokenBody;
+use reqwest::{Client, Url};
+
+pub enum RequestToken {
+    Success(AuthToken),
     Failed,
 }
 
@@ -25,37 +27,24 @@ impl RequestToken {
 
     async fn post(url: Url, client: &Client) -> RequestToken {
         // Convert it to be generic
-        let deviceName = String::from("Rust Project");
+        let device_name = String::from("Rust Project");
         let get_result = client
             .post(url)
-            .body(RequestTokenBody::devicetype(deviceName).as_string())
-            .body(RequestTokenBody::generateclientkey(true).as_string())
+            .body(RequestTokenBody::DeviceType(device_name).as_string())
+            .body(RequestTokenBody::GenerateClientKey(true).as_string())
             .send()
             .await;
         match get_result {
             Ok(response) => {
                 let response_text = response.text().await.unwrap_or("Unknown".to_string());
                 println!("RecievedToken for {:?}", response_text);
-                RequestToken::Success(response_text)
+                // RequestToken::Success(response_text)
+                RequestToken::Failed
             }
             Err(error) => {
                 println!("Unable to recieve reqeust from {:?}", error);
                 RequestToken::Failed
             }
-        }
-    }
-}
-
-enum RequestTokenBody {
-    devicetype(String),
-    generateclientkey(bool),
-}
-
-impl RequestTokenBody {
-    fn as_string(&self) -> String {
-        match self {
-            RequestTokenBody::devicetype(name) => String::from("devicetype:").push_str(name),
-            RequestTokenBody::generateclientkey(flag) => String::from("generateclientkey:{flag}"),
         }
     }
 }

@@ -4,9 +4,8 @@ use serde_json::{error, from_str, to_string};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HueBridge {
     pub id: String,
-    pub internalipaddress: String,
+    pub ip_address: String,
     pub port: u16,
-    pub token: String,
 }
 
 impl HueBridge {

@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuthToken {
     pub time_interval: Duration,
     pub token: String,

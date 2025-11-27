@@ -1,5 +1,4 @@
-use crate::setup::setup_hue::HueSetup;
-use crate::{crud::persistence::Persistence, setup::hue_bridge::HueBridge};
+use crate::setup::{hue_bridge::HueBridge, setup_hue::HueSetup};
 use reqwest::{Client, Url};
 
 pub enum Discovery {
@@ -41,10 +40,7 @@ impl Discovery {
 
     /// Confirm searching Hue Bridge can accept commands
     pub async fn confirm_ip_address(hue_bridge: &HueBridge, client: &Client) {
-        let url = format!(
-            "https://{}/api/0/config",
-            hue_bridge.internalipaddress.clone()
-        );
+        let url = format!("https://{}/api/0/config", hue_bridge.ip_address.clone());
         let mut url = Url::parse(&url).expect("Was not able to parte URL");
         url.set_port(Option::Some(443_u16))
             .expect("Not able to port to 443");
