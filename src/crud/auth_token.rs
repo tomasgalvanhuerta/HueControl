@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthToken {
@@ -9,7 +8,7 @@ pub struct AuthToken {
 }
 
 impl AuthToken {
-    pub fn new(duration: Duration, token: String, id: String) -> Self {
+    pub fn new(token: String, id: String) -> Self {
         AuthToken {
             clientkey: token,
             username: id,

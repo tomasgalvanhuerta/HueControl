@@ -1,7 +1,6 @@
 use super::auth_token::AuthToken;
 use crate::crud::table_wrapper_error::TableWrapperError;
 use rusqlite::{Connection, Result};
-use std::time::Duration;
 
 pub struct TableWrapper {
     connection: Connection,
