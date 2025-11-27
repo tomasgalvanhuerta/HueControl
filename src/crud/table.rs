@@ -36,9 +36,8 @@ impl TableWrapper {
             .prepare("SELECT date, token FROM authToken")?;
         let rows = stmt.query_map([], |row| {
             Ok(AuthToken {
-                time_interval: Duration::from_secs(row.get(0)?),
-                token: row.get(1)?,
-                id: row.get(2)?,
+                clientkey: row.get(1)?,
+                username: row.get(2)?,
             })
         })?;
 
@@ -53,10 +52,7 @@ impl TableWrapper {
     pub fn write_table(&self, auth_token: &AuthToken) -> Result<bool> {
         let result = self.connection.execute(
             "INSERT INTO authToken (date, token, id) VALUES (?1, ?2, ?3)",
-            [
-                auth_token.token.clone(),
-                auth_token.time_interval.as_secs().to_string(),
-            ],
+            [auth_token.clientkey.clone(), auth_token.username.clone()],
         );
         match result {
             Ok(_) => Ok(true),
@@ -70,10 +66,7 @@ impl TableWrapper {
     pub fn remove_auth_token(&self, auth_token: &AuthToken) -> Result<bool> {
         let result = self.connection.execute(
             "DELETE FROM authToken WHERE date = ?1 AND token = ?2 AND id = ?3",
-            [
-                auth_token.token.clone(),
-                auth_token.time_interval.as_secs().to_string(),
-            ],
+            [auth_token.clientkey.clone(), auth_token.username.clone()],
         );
         match result {
             Ok(_) => Ok(true),

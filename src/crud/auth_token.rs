@@ -3,18 +3,16 @@ use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthToken {
-    pub time_interval: Duration,
-    pub token: String,
+    pub clientkey: String,
     /// API Calls this User name
-    pub id: String,
+    pub username: String,
 }
 
 impl AuthToken {
     pub fn new(duration: Duration, token: String, id: String) -> Self {
         AuthToken {
-            time_interval: duration,
-            token,
-            id,
+            clientkey: token,
+            username: id,
         }
     }
 }
