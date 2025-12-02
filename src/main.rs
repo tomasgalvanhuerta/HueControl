@@ -9,6 +9,6 @@ pub use application::root_controller::RootController;
 #[tokio::main]
 async fn main() {
     println!("Starting HueControl");
-    let root_controller = RootController::new();
+    let mut root_controller = RootController::new();
     root_controller.start().await;
 }

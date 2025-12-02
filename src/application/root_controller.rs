@@ -1,3 +1,4 @@
+use super::bridge_state::BridgeState;
 use crate::communication::{discovery::Discovery, request_token::RequestToken};
 use crate::crud::auth_token::AuthToken;
 use crate::crud::persistence::Persistence;
@@ -6,16 +7,18 @@ use crate::setup::hue_bridge::HueBridge;
 use reqwest::Client;
 pub struct RootController {
     persistence: Persistence,
+    state: BridgeState,
 }
 
 impl RootController {
     pub fn new() -> Self {
         RootController {
             persistence: Persistence::new().expect("Unwrapping"),
+            state: BridgeState::UnknownError,
         }
     }
 
-    pub async fn start(&self) {
+    pub async fn start(&mut self) {
         // Confirm Table Exist, if not, create one
         let table_creation_result = self.persistence.create_table();
         match table_creation_result {
@@ -23,45 +26,43 @@ impl RootController {
                 TableState::DoesNotExist => {
                     // Program may not have access to create a new file
                     println!("Was not able to create folder, try again message");
+                    println!("RootController state is {:?}", self.state)
                 }
                 TableState::Exists => {
                     println!("Table exists");
-                    _ = &self
+                    _ = self
                         .persistence
                         .check_token()
-                        .map(|token| Self::with_token(token))
-                        .map_err(|_| Self::search_bridge());
+                        .map(|token| self.with_token(token))
+                        .map_err(|_| self.search_bridge());
                 }
             },
             Err(err) => println!("Error creating table: {:?}", err),
         }
     }
 
-    pub fn with_token(auth_token: AuthToken) {
-        println!("With token {:?}", auth_token);
-        // Connect with hue bridge to change color
+    pub fn with_token(&mut self, auth_token: AuthToken) {
+        println!("Ready to send commands with token {:?}", auth_token);
+        self.state = BridgeState::Connected(auth_token);
     }
 
-    pub fn persist_auth_token(&self, auth_token: AuthToken) {
+    pub fn persist_auth_token(&mut self, auth_token: AuthToken) {
         println!("Persist_token with {:?}", auth_token);
         match &self.persistence.persist_auth_token(&auth_token) {
             Ok(_) => println!("Token persisted successfully"),
             Err(err) => println!("Error persisting token: {:?}", err),
         }
-        Self::with_token(auth_token);
-        // let auth_token = AuthToken::new(duration, bridge.token, bridge.id);
-        // let persistence = Persistence::new(); // Pass it here
-        // persistence.persist_bridge(bridge);
+        self.with_token(auth_token);
     }
 
-    async fn request_auth_token(bridge: &HueBridge) {
+    async fn request_auth_token(&mut self, bridge: &HueBridge) {
         let client = Client::new();
         let ip_address = &bridge.ip_address;
         let request_token = RequestToken::request_token(&client, ip_address).await;
         match request_token {
             RequestToken::Success(auth_token) => {
                 println!("Request token successful");
-                RootController::with_token(auth_token);
+                self.with_token(auth_token);
             }
             RequestToken::Failed => {
                 println!("Error requesting token");
@@ -70,12 +71,12 @@ impl RootController {
         }
     }
 
-    async fn search_bridge() {
+    async fn search_bridge(&mut self) {
         let discovered_bridge = Self::discover().await;
         println!("Discovered {:?} Hue Bridge", discovered_bridge.len());
         if discovered_bridge.len() == 1 {
             let bridge = discovered_bridge.iter().next().unwrap();
-            RootController::request_auth_token(bridge).await;
+            self.request_auth_token(bridge).await;
         } else {
             todo!("Present multiple views")
         }
